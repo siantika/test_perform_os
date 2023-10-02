@@ -1,64 +1,52 @@
-import time
 import statistics
+import psutil
+import time
+
+# Function to get disk I/O throughput in MB/s
 
 
-def perform_operation(n):
-    result = 0
-    for i in range(n):
-        result += i * i
-    return result
+def get_disk_io_throughput():
+    initial_io_counters = psutil.disk_io_counters()
+    time.sleep(1)  # Sleep for 1 second
+    final_io_counters = psutil.disk_io_counters()
+
+    # Calculate the change in bytes read and written over the 1-second interval
+    bytes_read = final_io_counters.read_bytes - initial_io_counters.read_bytes
+    bytes_written = final_io_counters.write_bytes - initial_io_counters.write_bytes
+
+    # Convert bytes to megabytes and calculate throughput
+    throughput_mb_per_s = (bytes_read + bytes_written) / \
+        1_048_576  # 1 MB = 1,048,576 bytes
+
+    return throughput_mb_per_s
 
 
-def measure_throughput(operation_function, work_load, num_repeats):
-    throughputs = []  # Store individual throughput values for calculating standard deviation
-    for _ in range(num_repeats):
-        start_time = time.time()
-        operation_function(work_load)
-        end_time = time.time()
-        elapsed_time = end_time - start_time
-        try:
-            throughput = work_load / elapsed_time
-        except ZeroDivisionError:
-            print(
-                "Elapsed time is near zero. Try increasing num_operations or reducing num_repeats.")
-            return None
-        throughputs.append(throughput)
-
-    average_throughput = sum(throughputs) / num_repeats
-    std_deviation = statistics.stdev(throughputs) if num_repeats > 1 else 0
-
-    return average_throughput, std_deviation
+def test_processor(itter: int):
+    # Using buffer to minimize impact of writing to disk
+    disk_io_throughputs = []
+    for _ in range(itter):
+        disk_io_throughput = get_disk_io_throughput()
+        disk_io_throughputs.append(disk_io_throughput)
+    return disk_io_throughputs
 
 
-if __name__ == "__main__":
-    work_load_1 = 10_000
-    work_load_2 = 100_000
-    work_load_3 = 1_000_000
-    num_repeats = 10
+def result_statistic(data: list):
+    avg_data = statistics.mean(data)
+    min_data = min(data)
+    max_data = max(data)
+    std_deviation = statistics.stdev(data)
 
-    result_1 = measure_throughput(perform_operation, work_load_1, num_repeats)
-    result_2 = measure_throughput(perform_operation, work_load_2, num_repeats)
-    result_3 = measure_throughput(perform_operation, work_load_3, num_repeats)
+    return {
+        "Average throughput (MB/s)": round(avg_data, 2),
+        "Minimum throughput (MB/s)": round(min_data, 2),
+        "Maximum throughput (MB/s)": round(max_data, 2),
+        "Standard Deviation (MB/s)": round(std_deviation, 2)
+    }
 
-    if (result_1 and result_2 and result_3) is not None:
-        average_throughput_1, std_deviation_1 = result_1
-        average_throughput_2, std_deviation_2 = result_2
-        average_throughput_3, std_deviation_3 = result_3
-        print("Workload: 10.000")
-        print(
-            f"Average Throughput: {average_throughput_1:.2f} operations per second")
-        print(
-            f"Standard Deviation: {std_deviation_1:.2f} operations per second (across {num_repeats} runs)")
-        print("\n")
-        print("Workload: 100.000")
-        print(
-            f"Average Throughput: {average_throughput_2:.2f} operations per second")
-        print(
-            f"Standard Deviation: {std_deviation_2:.2f} operations per second (across {num_repeats} runs)")
-        print("\n")
-        print("Workload: 1.000.000")
-        print(
-            f"Average Throughput: {average_throughput_3:.2f} operations per second")
-        print(
-            f"Standard Deviation: {std_deviation_3:.2f} operations per second (across {num_repeats} runs)")
-        print("\n")
+
+if __name__ == '__main__':
+    data_test = test_processor(10)
+    result = result_statistic(data_test)
+    print("Disk I/O Throughput:")
+    for key, value in result.items():
+        print(f"{key}: {value}")
