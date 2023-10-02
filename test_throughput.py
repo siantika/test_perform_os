@@ -16,7 +16,7 @@ def get_disk_io_throughput():
 
     # Convert bytes to megabytes and calculate throughput
     throughput_kb_per_s = (bytes_read + bytes_written) / \
-        1_024
+        1
 
     return throughput_kb_per_s
 
