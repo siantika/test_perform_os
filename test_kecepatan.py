@@ -1,11 +1,13 @@
 import time
 import statistics
 
+
 def perform_calculation(n):
     result = 0
     for i in range(n):
         result += i * i
     return result
+
 
 def test_processor(iterations: int, work_load: int) -> dict:
     execution_times = []
@@ -15,12 +17,12 @@ def test_processor(iterations: int, work_load: int) -> dict:
         end_time = time.time()
         execution_time = end_time - start_time
         execution_times.append(execution_time)
-    
+
     avg_execution_time = statistics.mean(execution_times)
     min_execution_time = min(execution_times)
     max_execution_time = max(execution_times)
     std_deviation = statistics.stdev(execution_times)
-    
+
     return {
         "Average Execution Time (secs)": round(avg_execution_time, 6),
         "Minimum Execution Time (secs)": round(min_execution_time, 6),
@@ -28,12 +30,13 @@ def test_processor(iterations: int, work_load: int) -> dict:
         "Standard Deviation (secs)": round(std_deviation, 6)
     }
 
+
 if __name__ == "__main__":
     iterations = 20
     work_load_1 = 10_000
     work_load_2 = 100_000
     work_load_3 = 1_000_000
-    
+
     results_1 = test_processor(iterations, work_load_1)
     print("Pengujian dengan workload 10.000")
     print(40*"-")
@@ -56,4 +59,3 @@ if __name__ == "__main__":
     for key, value in results_3.items():
         print(f"{key}: {value}")
     print("\n")
-

@@ -1,7 +1,5 @@
-import multiprocessing
-
-work_load = 10000000
-# Define a CPU-intensive function
+import psutil
+import statistics
 
 
 def cpu_intensive_task(n):
@@ -11,32 +9,40 @@ def cpu_intensive_task(n):
     return result
 
 
-if __name__ == "__main__":
-    num_processes = multiprocessing.cpu_count()  # Get the number of CPU cores
+def test_processor(workload: int, num_samples: int, interval: float):
+    cpu_usages = []
+    for _ in range(num_samples):
+        cpu_usage_start = psutil.cpu_percent(interval=interval)
+        cpu_intensive_task(workload)
+        cpu_usage_end = psutil.cpu_percent(interval=interval)
+        cpu_usage_diff = cpu_usage_end - cpu_usage_start
+        cpu_usages.append(cpu_usage_diff)
 
-    # Start multiple processes to simulate CPU load
-    processes = [multiprocessing.Process(
-        target=cpu_intensive_task, args=(work_load,)) for _ in range(num_processes)]
+    # Calculate statistics
+    avg_cpu_usage = sum(cpu_usages) / num_samples
+    min_cpu_usage = min(cpu_usages)
+    max_cpu_usage = max(cpu_usages)
+    std_deviation = statistics.stdev(cpu_usages)
 
-    # Start the processes
-    for process in processes:
-        process.start()
+    print(
+        f"Average CPU Usage over {interval * num_samples} seconds: {avg_cpu_usage:.2f}%")
+    print(f"Minimum CPU Usage: {min_cpu_usage:.2f}%")
+    print(f"Maximum CPU Usage: {max_cpu_usage:.2f}%")
+    print(f"Standard Deviation of CPU Usage: {std_deviation:.2f}")
 
-    # Monitor CPU usage while the processes are running
-    try:
-        # You can use external tools like 'top', 'htop', or system-specific utilities
-        # to monitor CPU usage, or use Python libraries like psutil to monitor it programmatically.
-        # Here's a basic example using psutil:
-        import psutil
-        # Check CPU usage every 1 second
-        cpu_percent = psutil.cpu_percent(interval=1)
-        print(f"CPU Usage: {cpu_percent}%")
-    except KeyboardInterrupt:
-        # Stop the processes if the user interrupts the script (e.g., by pressing Ctrl+C)
-        for process in processes:
-            process.terminate()
-            process.join()
 
-    # Wait for all processes to finish
-    for process in processes:
-        process.join()
+if __name__ == '__main__':
+    workload_1 = 10_000
+    workload_2 = 100_000
+    workload_3 = 1_000_000
+    num_samples = 10
+    interval = 1.0
+
+    print("Workload 10.000")
+    test_processor(workload_1, num_samples, interval)
+    print()
+    print("Workload 100.000")
+    test_processor(workload_2, num_samples, interval)
+    print()
+    print("Workload 1.000.000")
+    test_processor(workload_3, num_samples, interval)

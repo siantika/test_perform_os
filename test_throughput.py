@@ -2,7 +2,7 @@ import statistics
 import psutil
 import time
 
-# Function to get disk I/O throughput in MB/s
+# Function to get disk I/O throughput in bytes/s
 
 
 def get_disk_io_throughput():
