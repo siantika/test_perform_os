@@ -15,10 +15,10 @@ def get_disk_io_throughput():
     bytes_written = final_io_counters.write_bytes - initial_io_counters.write_bytes
 
     # Convert bytes to megabytes and calculate throughput
-    throughput_mb_per_s = (bytes_read + bytes_written) / \
-        1_048_576  # 1 MB = 1,048,576 bytes
+    throughput_kb_per_s = (bytes_read + bytes_written) / \
+        1_024
 
-    return throughput_mb_per_s
+    return throughput_kb_per_s
 
 
 def test_processor(itter: int):
@@ -37,10 +37,10 @@ def result_statistic(data: list):
     std_deviation = statistics.stdev(data)
 
     return {
-        "Average throughput (MB/s)": round(avg_data, 2),
-        "Minimum throughput (MB/s)": round(min_data, 2),
-        "Maximum throughput (MB/s)": round(max_data, 2),
-        "Standard Deviation (MB/s)": round(std_deviation, 2)
+        "Average throughput (KB/s)": round(avg_data, 2),
+        "Minimum throughput (KB/s)": round(min_data, 2),
+        "Maximum throughput (KB/s)": round(max_data, 2),
+        "Standard Deviation (KB/s)": round(std_deviation, 2)
     }
 
 
